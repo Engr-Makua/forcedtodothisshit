@@ -1,0 +1,47 @@
+name: Docker CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # change to your default branch if different
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t engrmakua/testrepo:latest .
+
+    - name: Tag Docker image
+      run: |
+      
+        docker tag engrmakua/testrepo:latest engrmakua/testrepo:${{ github.sha }}
+
+    - name: Push Docker image (latest and sha)
+      run: |
+        docker push engrmakua/testrepo:latest
+        docker push engrmakua/testrepo:${{ github.sha }}
+
+    # Optional: Run container (for test/stage/demo purposes)
+    - name: Run container
+      run: |
+        docker run -d -p 8080:80 --name portfolio_container engrmakua/testrepo:latest
+
+
+
+
+    
